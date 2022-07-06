@@ -2,7 +2,7 @@ import requests
 import telebot
 import json
 from modules import search_security, create_link_stock_api
-from config import telegram_bot_token
+from config import telegram_bot_token, stock_token
 
 bot = telebot.TeleBot(telegram_bot_token)
 
@@ -19,12 +19,22 @@ def response(message):
         
     if message.text == "/find":
         bot.send_message(message.chat.id, "give me name or simbol of your security")
-        @bot.message_handler(func=lambda message: True)
-        def response_security(message):
-            bot.send_message(message.chat.id, search_security(message.text))
+        
+@bot.message_handler(func=lambda message: True)
+def response_security(message):
+    response = search_security(message.text)
+    if response["bestMatches"] == []:
+        bot.send_message(message.chat.id, "I found nothing")
+
+    else:
+        bot.send_message(message.chat.id, "I found this security:")
+        for i in response["bestMatches"]:
+            bot.send_message(message.chat.id, f'Name: {i["2. name"]}\nType: {i["3. type"]}\nSymbol: {i["1. symbol"]}')
 
 
-
+def search_security(request_word):
+    req = requests.get(f"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={request_word}&apikey={stock_token}").json()
+    return req 
 
 
 """
