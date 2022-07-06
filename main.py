@@ -8,6 +8,13 @@ bot = telebot.TeleBot(telegram_bot_token)
 
 commands_list = ["start","help","find"]
 
+
+
+
+
+
+"""
+
 @bot.message_handler(commands = commands_list)
 def response(message):
     
@@ -33,7 +40,7 @@ def echo_find(message):
 
 
 
-"""
+
 # Handles all text messages that match the regular expression
 @bot.message_handler(regexp="SOME_REGEXP")
 def handle_message(message):
