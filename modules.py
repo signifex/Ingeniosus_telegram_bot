@@ -9,7 +9,7 @@ def get_weather(city = "vienna"):
     req = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={open_weather_token}").json()
     return req
 
-def get_stock_market_data(request_word):
+def search_security(request_word):
     
     req = requests.get(f"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={request_word}&apikey={stock_token}").json()
     print (f"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={request_word}&apikey={stock_token}")
