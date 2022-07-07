@@ -1,7 +1,6 @@
 import requests
 import telebot
 import json
-from modules import search_security, create_link_stock_api
 from config import telegram_bot_token, stock_token
 
 bot = telebot.TeleBot(telegram_bot_token)
@@ -27,15 +26,34 @@ def response_security(message):
         bot.send_message(message.chat.id, "I found nothing")
 
     else:
-        bot.send_message(message.chat.id, "I found this security:")
+        bot.send_message(message.chat.id, "I found this:")
         for i in response["bestMatches"]:
-            bot.send_message(message.chat.id, f'Name: {i["2. name"]}\nType: {i["3. type"]}\nSymbol: {i["1. symbol"]}')
+            bot.send_message(message.chat.id, format_answer_telegram(i))
 
 
 def search_security(request_word):
     req = requests.get(f"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={request_word}&apikey={stock_token}").json()
     return req 
 
+
+def create_link_stock_api(**kwargs):
+    link = "https://www.alphavantage.co/query?"
+    for key, value in kwargs.items():
+            link += "{0}={1}&".format(key, value)
+    link += f"apikey={stock_token}"
+    return link
+
+def format_answer_telegram(row_data):
+    row_answer = []
+    for i in row_data.keys():
+        if i == "5. marketOpen" or i == "6. marketClose" or i == "9. matchScore":
+            continue
+        else:
+            row_answer.append(f"{i[3:].capitalize()}: {row_data[i]}")
+    answer = "\n".join(row_answer)
+    return answer
+
+#for i in x["bestMatches"][0].keys(): print(f'{i[3:]}: {x["bestMatches"][0][i]}')
 
 """
 
