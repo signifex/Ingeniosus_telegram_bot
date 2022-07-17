@@ -1,8 +1,9 @@
 import requests
 import telebot
 import json
-from config import telegram_bot_token, stock_token
 import os
+
+from config import telegram_bot_token, stock_token
 
 #constances
 
@@ -17,12 +18,16 @@ subcommands_list = ("To find security, start your massage with 'Find' like 'Find
 
 @bot.message_handler(commands = ["start","help"])
 def main_response(message):
+
+    start_massage = f"Hey, im stock viewer bot\n\nHere is list of all commands:\n{'  '.join(commands_list)}\n\n{''.join(subcommands_list)}"
+
+    help_massage = f"Here is list of all commands: {' '.join(commands_list)}\n\n{''.join(subcommands_list)}"
     
     if message.text == "/start":
-        bot.send_message(message.chat.id, "Hey, im stock viewer bot\n" + f"Here is list of all commands:  {'  '.join(commands_list)}")
+        bot.send_message(message.chat.id, start_massage)
         
     if message.text == "/help":
-        bot.send_message(message.chat.id, f"Here is list of all commands: {' '.join(commands_list)}\n\n{''.join(subcommands_list)}")
+        bot.send_message(message.chat.id, help_massage)
         
 #finder
 
@@ -37,10 +42,10 @@ def response_security(message):
         
     elif  "bestMatches" in response.keys():
         
-        if response["bestMatches"] == []:
+        if response["bestMatches"] == {}:
             bot.reply_to(message, "I found nothing")
             
-        if response["bestMatches"] != []:
+        if response["bestMatches"] != {}:
             bot.reply_to(message, "I found this:")
             for i in response["bestMatches"]:
                 bot.send_message(message.chat.id, format_answer_telegram(i))
@@ -52,12 +57,13 @@ def response_security(message):
 
 @bot.message_handler(regexp="^[Pp]rice [A-Za-z0-9]+$")
 def response_security(message):
+    
     response = requester(function  = "GLOBAL_QUOTE", symbol = message.text.split()[1])
     
-    if response["Global Quote"] == [] or ("Error Message" in response.keys()):
+    if response["Global Quote"] == {} or ("Error Message" in response.keys()):
         bot.reply_to(message, "Something get wrong")
 
-    if response["Global Quote"] != []:
+    if response["Global Quote"] != {}:
         bot.send_message(message.chat.id, format_answer_telegram(response["Global Quote"]))
 
 
