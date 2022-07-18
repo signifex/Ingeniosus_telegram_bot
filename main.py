@@ -54,7 +54,7 @@ def response_security(message):
         if response["bestMatches"] == []:
             bot.reply_to(message, "I found nothing")
             
-        if response["bestMatches"] != {}:
+        if response["bestMatches"] != []:
             bot.reply_to(message, "I found this:")
             for i in response["bestMatches"]:
                 bot.send_message(message.chat.id, format_answer_telegram(i))
