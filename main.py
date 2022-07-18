@@ -2,7 +2,6 @@ import requests
 import telebot
 import json
 import os
-import data
 
 from config import telegram_bot_token, stock_token
 
@@ -22,9 +21,9 @@ subcommands_list = ("To find security, start your massage with 'Find' like 'Find
                     #"To get chart of security, start your massage with 'Chart' and add symbol of the security and timeseries like 'Chart AAPL day'. Chart can be daily(day), weekly(week) and monthly(month)"
                     )
 
-start_message = f"Hey, im stock viewer bot\n\nHere is list of all commands:\n{'  '.join(commands_list)}\n\n{'\n\n'.join(subcommands_list)}"
+start_message = "Hey, im stock viewer bot\n\nHere is list of all commands:\n{0}\n\n{1}".format('  '.join(commands_list),'\n\n'.join(subcommands_list))
 
-help_message = f"Here is list of all commands: {' '.join(commands_list)}\n\n{''.join(subcommands_list)}"
+help_message = "Here is list of all commands: {0}\n\n{1}".format(' '.join(commands_list), '\n\n'.join(subcommands_list))
 
 error_message = "Something get wrong.\nTry /help"
 
@@ -41,7 +40,7 @@ def main_response(message):
         
 #finder
 
-@bot.message_handler(regexp="^[Ff]ind [A-Za-z0-9.]+$")
+@bot.message_handler(regexp="^[Ff]ind [A-Za-z0-9\\.]+$")
 def response_security(message):
 
     request_word = message.text.split()[1]
@@ -65,7 +64,7 @@ def response_security(message):
 
 #simple price
 
-@bot.message_handler(regexp="^[Pp]rice [A-Za-z0-9]+$")
+@bot.message_handler(regexp="^[Pp]rice [A-Za-z0-9\\.]+$")
 def response_security(message):
     
     response = requester(function  = "GLOBAL_QUOTE", symbol = message.text.split()[1])
@@ -79,7 +78,7 @@ def response_security(message):
 
 #chart
 
-@bot.message_handler(regexp="^[Cc]hart [A-Za-z0-9]+ [A-Za-z0-9]+ [A-Za-z0-9]+$")
+@bot.message_handler(regexp="^[Cc]hart [A-Za-z0-9\\.]+ [A-Za-z0-9]+ [A-Za-z0-9]+$")
 def response_security(message):
     pass
 
@@ -97,7 +96,7 @@ def format_answer_telegram(row_data):
     unimportant_stats = ("5. marketOpen", "6. marketClose", "9. matchScore") #to skip some param in answer, add his key here
     
     for i in row_data.keys():
-        if i in unimpirtant_stats:
+        if i in unimportant_stats:
             continue
         else:
             row_answer.append(f"{i.split()[1].capitalize()}: {row_data[i]}")
