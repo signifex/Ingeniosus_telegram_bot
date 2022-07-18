@@ -2,32 +2,42 @@ import requests
 import telebot
 import json
 import os
+import data
 
 from config import telegram_bot_token, stock_token
 
 #constances
 
+"""
+description to all new feachers can be simply added to subcommand_list
+
+"""
+
 bot = telebot.TeleBot(telegram_bot_token)
+
 commands_list = ("/start", "/help")
-subcommands_list = ("To find security, start your massage with 'Find' like 'Find apple'\n\n",
-                    "To get last price of the security, start your massage with 'Price' and add symbol of the security like 'Price AAPL'\n\n",
+
+subcommands_list = ("To find security, start your massage with 'Find' like 'Find apple'",
+                    "To get last price of the security, start your massage with 'Price' and add symbol of the security like 'Price AAPL'",
                     #"To get chart of security, start your massage with 'Chart' and add symbol of the security and timeseries like 'Chart AAPL day'. Chart can be daily(day), weekly(week) and monthly(month)"
                     )
+
+start_message = f"Hey, im stock viewer bot\n\nHere is list of all commands:\n{'  '.join(commands_list)}\n\n{'\n\n'.join(subcommands_list)}"
+
+help_message = f"Here is list of all commands: {' '.join(commands_list)}\n\n{''.join(subcommands_list)}"
+
+error_message = "Something get wrong.\nTry /help"
 
 #commands
 
 @bot.message_handler(commands = ["start","help"])
 def main_response(message):
-
-    start_massage = f"Hey, im stock viewer bot\n\nHere is list of all commands:\n{'  '.join(commands_list)}\n\n{''.join(subcommands_list)}"
-
-    help_massage = f"Here is list of all commands: {' '.join(commands_list)}\n\n{''.join(subcommands_list)}"
     
     if message.text == "/start":
-        bot.send_message(message.chat.id, start_massage)
+        bot.send_message(message.chat.id, start_message)
         
     if message.text == "/help":
-        bot.send_message(message.chat.id, help_massage)
+        bot.send_message(message.chat.id, help_message)
         
 #finder
 
@@ -37,8 +47,8 @@ def response_security(message):
     request_word = message.text.split()[1]
     response = requester(function = "SYMBOL_SEARCH", keywords = request_word)
     
-    if ("Error Message" in response.keys()):
-        bot.reply_to(message, "Something get wrong")
+    if "Error Message" in response.keys():
+        bot.reply_to(message, error_message)
         
     elif  "bestMatches" in response.keys():
         
@@ -51,7 +61,7 @@ def response_security(message):
                 bot.send_message(message.chat.id, format_answer_telegram(i))
                 
     else:
-         bot.reply_to(message, "Something get wrong")
+         bot.reply_to(message, error_message)
 
 #simple price
 
@@ -61,7 +71,7 @@ def response_security(message):
     response = requester(function  = "GLOBAL_QUOTE", symbol = message.text.split()[1])
     
     if response["Global Quote"] == {} or ("Error Message" in response.keys()):
-        bot.reply_to(message, "Something get wrong")
+        bot.reply_to(message, error_message)
 
     if response["Global Quote"] != {}:
         bot.send_message(message.chat.id, format_answer_telegram(response["Global Quote"]))
@@ -77,14 +87,17 @@ def response_security(message):
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    bot.reply_to(message, "Sorry, I did not understand")
+    bot.reply_to(message, "Sorry, I did not understand.\nTry /help")
 
 #modules
 
 def format_answer_telegram(row_data):
     row_answer = []
+    
+    unimportant_stats = ("5. marketOpen", "6. marketClose", "9. matchScore") #to skip some param in answer, add his key here
+    
     for i in row_data.keys():
-        if i == "5. marketOpen" or i == "6. marketClose" or i == "9. matchScore":
+        if i in unimpirtant_stats:
             continue
         else:
             row_answer.append(f"{i.split()[1].capitalize()}: {row_data[i]}")
@@ -96,7 +109,6 @@ def requester(**kwargs):
     for key, value in kwargs.items():
         link += "{0}={1}&".format(key, value)
     link += f"apikey={stock_token}"
-    # print(link)
     req = requests.get(link).json()
     return req
 
